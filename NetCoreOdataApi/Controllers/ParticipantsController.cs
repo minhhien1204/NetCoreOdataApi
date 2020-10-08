@@ -7,16 +7,17 @@ using Microsoft.AspNetCore.Mvc;
 using NetCoreOdataApi.Core.UnitOfWork;
 using NetCoreOdataApi.Domain;
 using NetCoreOdataApi.Services;
-
+using Microsoft.AspNetCore.Authorization;
 namespace NetCoreOdataApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    //[Authorize]
     public class ParticipantsController : ControllerBase
     {
         private readonly IParticipantService _participantService;
         private readonly IUnitOfWorkAsync _unitOfWorkAsync;
-
+      
         public ParticipantsController(IParticipantService participantService, IUnitOfWorkAsync unitOfWorkAsync)
         {
             _participantService = participantService;
@@ -26,6 +27,7 @@ namespace NetCoreOdataApi.Controllers
         [HttpGet, EnableQuery]
         public async Task<IQueryable<ParticipantViewModel>> Get()
         {
+           
             return await _participantService.GetAllParticipantsAsync();
         }
         [HttpPost]
@@ -48,7 +50,7 @@ namespace NetCoreOdataApi.Controllers
             }
         }
         [HttpPut]
-        public async Task<IActionResult> Put(Guid key, ParticipantViewModel model)
+        public async Task<IActionResult> Put(string key, ParticipantViewModel model)
         {
             if (!ModelState.IsValid)
             {

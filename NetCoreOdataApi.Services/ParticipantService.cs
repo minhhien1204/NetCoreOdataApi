@@ -13,7 +13,7 @@ namespace NetCoreOdataApi.Services
         IQueryable<ParticipantViewModel> GetAllParticipants();
         Task<Participant> InsertAsync(ParticipantViewModel model);
         Participant Insert(ParticipantViewModel model);
-        Task<ParticipantViewModel> UpdateAsync(Guid key,ParticipantViewModel model);
+        Task<ParticipantViewModel> UpdateAsync(string key,ParticipantViewModel model);
     }
     public class ParticipantService : Service<Participant>, IParticipantService
     {
@@ -60,19 +60,19 @@ namespace NetCoreOdataApi.Services
             return newParticipant;
         }
 
-        public async Task<ParticipantViewModel> UpdateAsync(Guid key, ParticipantViewModel model)
+        public async Task<ParticipantViewModel> UpdateAsync(string key, ParticipantViewModel model)
         {
             bool result = await Task.Run(() => Update(key,model));
             return model;
         }
 
-        private bool Update(Guid key, ParticipantViewModel model)
+        private bool Update(string key, ParticipantViewModel model)
         {
-            var data = Find(key);
+            var data = Find(model.Id);
             if(data != null)
             {
                 data.Score = model.Score;
-                data.Score = model.TimeSpent;
+                data.TimeSpent = model.TimeSpent;
                 data.LastModifiedDate = DateTime.Now;
                 return true;
             }

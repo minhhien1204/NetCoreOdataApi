@@ -27,6 +27,11 @@ namespace NetCoreOdataApi.Controllers
         {
             return await _questionService.GetAllQuestionsAsync();
         }
+        [HttpGet, EnableQuery]
+        public async Task<IQueryable<QuestionViewModel>> GetAllAnswers()
+        {
+            return await _questionService.GetAllAnswersAsync();
+        }
         [HttpPost]
         public async Task<IActionResult> Post(QuestionViewModel model)
         {

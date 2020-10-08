@@ -13,6 +13,8 @@ namespace NetCoreOdataApi.Services
     {
         Task<IQueryable<QuestionViewModel>> GetAllQuestionsAsync();
         IQueryable<QuestionViewModel> GetAllQuestions();
+        Task<IQueryable<QuestionViewModel>> GetAllAnswersAsync();
+        IQueryable<QuestionViewModel> GetAllAnswers();
         Task<Question> InsertAsync(QuestionViewModel model);
         Question Insert(QuestionViewModel model);
         Task<QuestionViewModel> UpdateAsync(Guid key, QuestionViewModel model);
@@ -23,8 +25,29 @@ namespace NetCoreOdataApi.Services
         {
 
         }
-
+        public Task<IQueryable<QuestionViewModel>> GetAllQuestionsAsync()
+        {
+            return Task.Run(() => GetAllQuestions());
+        }
         public IQueryable<QuestionViewModel> GetAllQuestions()
+        {
+            return this.Queryable().Where(x => x.Delete == false).Select(x => new QuestionViewModel()
+            {
+                Id = x.Id,
+                Content = x.Content,
+                //Answer = x.Answer,
+                ImageQuestion = x.ImageQuestion,
+                Options = new string[] { x.Option1, x.Option2, x.Option3, x.Option4 },
+                //CreateDate = x.CreateDate,
+                //LastModifiedDate = x.LastModifiedDate,
+                Delete = x.Delete
+            }).OrderBy(x=> Guid.NewGuid());
+        }
+        public Task<IQueryable<QuestionViewModel>> GetAllAnswersAsync()
+        {
+            return Task.Run(() => GetAllAnswers());
+        }
+        public IQueryable<QuestionViewModel> GetAllAnswers()
         {
             return this.Queryable().Where(x => x.Delete == false).Select(x => new QuestionViewModel()
             {
@@ -33,16 +56,10 @@ namespace NetCoreOdataApi.Services
                 Answer = x.Answer,
                 ImageQuestion = x.ImageQuestion,
                 Options = new string[] { x.Option1, x.Option2, x.Option3, x.Option4 },
-                CreateDate = x.CreateDate,
-                LastModifiedDate = x.LastModifiedDate,
                 Delete = x.Delete
-            }) ;
+            }).OrderBy(x => Guid.NewGuid());
         }
 
-        public Task<IQueryable<QuestionViewModel>> GetAllQuestionsAsync()
-        {
-            return Task.Run(() => GetAllQuestions());
-        }
 
         public Question Insert(QuestionViewModel model)
         {
@@ -58,7 +75,6 @@ namespace NetCoreOdataApi.Services
                 Delete = false,
                 CreateDate = DateTime.Now,
                 LastModifiedDate = DateTime.Now,
-
             };
             base.Insert(newQues);
             return newQues;

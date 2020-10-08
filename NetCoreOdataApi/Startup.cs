@@ -1,27 +1,23 @@
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNet.OData.Builder;
 using Microsoft.AspNet.OData.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.OData.Edm;
 using NetCoreOdataApi.Core;
 using NetCoreOdataApi.Data;
 using NetCoreOdataApi.Models;
 using NetCoreOdataApi.Services;
 using NetCoreOdataApi.Core.UnitOfWork;
-using static NetCoreOdataApi.Services.CategoryService;
 using NetCoreOdataApi.Core.Repositories;
 using NetCoreOdataApi.Domain;
+using NetCoreOdataApi.Core.Models;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.WebSockets;
 
 namespace NetCoreOdataApi
 {
@@ -46,17 +42,35 @@ namespace NetCoreOdataApi
                 options.DefaultPolicyName = "AllowAllOrigins";
             });
 
-            services.AddDbContext<IDataContext, DataContext>(options =>
-                 options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
-            services.AddControllers(mvcOptions => mvcOptions.EnableEndpointRouting = false);
-        
-            services.AddOData();
             services.AddScoped<IDataContext, DataContext>();
+            services.AddDbContext<DataContext>(options =>
+                 options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+            services.AddScoped<UserManager<ApplicationUser>>();
+
+            services.AddIdentity<ApplicationUser, IdentityRole>(config =>
+            {
+                config.Password.RequiredLength = 4;
+                config.Password.RequireDigit = false;
+                config.Password.RequireNonAlphanumeric = false;
+                config.Password.RequireUppercase = false;
+                config.Password.RequireLowercase = false;
+            })
+               .AddEntityFrameworkStores<DataContext>()
+               .AddDefaultTokenProviders();
+
+
+            services.AddControllers(mvcOptions => mvcOptions.EnableEndpointRouting = false);
+
+            services.AddOData();
+            //services.AddScoped<IDataContext, DataContext>();
+          
             services.AddTransient(typeof(IRepositoryAsync<>), typeof(Repository<>));
             services.AddTransient<IUnitOfWorkAsync, UnitOfWork>();
             services.AddTransient<ICategoryService, CategoryService>();
             services.AddTransient<IParticipantService, ParticipantService>();
             services.AddTransient<IQuestionService, QuestionService>();
+
+     
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -67,9 +81,10 @@ namespace NetCoreOdataApi
                 app.UseDeveloperExceptionPage();
             }
 
+            app.UseAuthentication();
             
-
             app.UseHttpsRedirection();
+            
             app.UseCors();
             app.UseMvc(routeBuilder => 
             {
@@ -86,6 +101,10 @@ namespace NetCoreOdataApi
             //quiz project
             edmBuilder.EntitySet<ParticipantViewModel>("Participants");
             edmBuilder.EntitySet<QuestionViewModel>("Questions");
+            edmBuilder.EntityType<QuestionViewModel>()
+            .Collection
+            .Function("GetAllAnswers")
+            .ReturnsCollectionFromEntitySet<QuestionViewModel>("Questions");
             return edmBuilder.GetEdmModel();
         }
     }

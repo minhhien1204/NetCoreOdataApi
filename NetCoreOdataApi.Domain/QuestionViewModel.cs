@@ -7,8 +7,8 @@ namespace NetCoreOdataApi.Domain
     public class QuestionViewModel
     {
         public Guid Id { get; set; }
-        public DateTime CreateDate { get; set; }
-        public DateTime LastModifiedDate { get; set; }
+        //public DateTime CreateDate { get; set; }
+        //public DateTime LastModifiedDate { get; set; }
         public bool Delete { get; set; }
         public string Content { get; set; }
         public string ImageQuestion { get; set; }

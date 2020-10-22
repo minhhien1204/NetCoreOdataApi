@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.OData;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NetCoreOdataApi.Core.UnitOfWork;
 using NetCoreOdataApi.Domain;
@@ -23,7 +24,9 @@ namespace NetCoreOdataApi.Controllers
             _unitOfWorkAsync = unitOfWorkAsync;
         }
 
-        [HttpGet, EnableQuery]
+        [HttpGet]
+        [EnableQuery]
+        [Authorize]
         public async Task<IQueryable<CategoryViewModel>> Get()
         {
             return await _categoryService.GetAllCategoriesAsync();

@@ -17,7 +17,10 @@ using NetCoreOdataApi.Core.Repositories;
 using NetCoreOdataApi.Domain;
 using NetCoreOdataApi.Core.Models;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.WebSockets;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using System.Text;
+using Microsoft.IdentityModel.Tokens;
+using System;
 
 namespace NetCoreOdataApi
 {
@@ -57,7 +60,26 @@ namespace NetCoreOdataApi
             })
                .AddEntityFrameworkStores<DataContext>()
                .AddDefaultTokenProviders();
+            //JWT Authentication
+            var key = Encoding.UTF8.GetBytes(Configuration["ApllicationSettings:JWT_Secret"].ToString());
 
+            services.AddAuthentication(x =>
+            {
+                x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                x.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+            }).AddJwtBearer(x =>{
+                x.RequireHttpsMetadata = false;
+                x.SaveToken = false;
+                x.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    ClockSkew = TimeSpan.Zero
+                };
+            });
 
             services.AddControllers(mvcOptions => mvcOptions.EnableEndpointRouting = false);
 
@@ -82,10 +104,11 @@ namespace NetCoreOdataApi
             }
 
             app.UseAuthentication();
-            
+
             app.UseHttpsRedirection();
             
             app.UseCors();
+
             app.UseMvc(routeBuilder => 
             {
                 //routeBuilder.EnableDependencyInjection();
